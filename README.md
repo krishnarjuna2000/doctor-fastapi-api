@@ -60,3 +60,15 @@ A beginner-friendly FastAPI project for managing doctor records with MySQL.
 - Experience must be >= 0
 - Proper error handling for not found and duplicates
 
+##Screenshots 
+ screenshots/
+- swagger_home.png
+- post_doctor.png
+-get_doctors.png
+- get_doctor_by_id.png
+-update_doctor.png
+-delete_doctor.png
+-value error.png
+-Duplicate Email.png
+- mysql_data
+    
