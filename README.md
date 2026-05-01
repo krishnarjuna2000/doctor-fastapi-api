@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Doctor API
 
 A beginner-friendly FastAPI project for managing doctor records with MySQL.
@@ -58,3 +59,4 @@ A beginner-friendly FastAPI project for managing doctor records with MySQL.
 - Email must be unique
 - Experience must be >= 0
 - Proper error handling for not found and duplicates
+
