@@ -55,3 +55,21 @@ def require_doctor_or_admin(current_user = Depends(get_current_user)):
             detail="Only doctors and admins can access this resource",
         )
     return current_user
+
+
+def require_patient(current_user = Depends(get_current_user)):
+    if current_user.role != "patient":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Patient access required",
+        )
+    return current_user
+
+
+def require_doctor(current_user = Depends(get_current_user)):
+    if current_user.role != "doctor":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Doctor access required",
+        )
+    return current_user

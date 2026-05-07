@@ -4,12 +4,14 @@ from app.database import create_database_if_missing, engine, Base
 from app.routers import auth as auth_router
 from app.routers import doctors as doctor_router
 from app.routers import patients as patient_router
-from app.models import user, doctor, patient  # noqa: F401
+from app.routers import appointments as appointment_router  # Added for Task 3
+from app.routers import prescriptions as prescription_router  # Added for Task 3
+from app.models import user, doctor, patient, appointment, prescription  # noqa: F401 - Added new models
 
 app = FastAPI(
     title="Doctor API",
-    description="Production-style FastAPI backend for doctor and patient management",
-    version="1.0.0"
+    description="Production-style FastAPI backend for doctor and patient management with appointments and prescriptions",
+    version="2.0.0"  # Updated version for Task 3
 )
 
 
@@ -26,13 +28,15 @@ def root():
     """Welcome endpoint - API information."""
     return {
         "message": "Welcome to Doctor API",
-        "description": "A production-style FastAPI backend for doctor and patient management",
-        "version": "1.0.0",
+        "description": "A production-style FastAPI backend for doctor and patient management with appointments and prescriptions",
+        "version": "2.0.0",
         "docs": "/docs",
         "endpoints": {
             "authentication": "/auth/login, /auth/register",
             "doctors": "/doctors",
             "patients": "/patients",
+            "appointments": "/appointments",  # Added for Task 3
+            "prescriptions": "/prescriptions",  # Added for Task 3
             "health": "/health"
         }
     }
@@ -56,3 +60,5 @@ def favicon():
 app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
 app.include_router(doctor_router.router, prefix="/doctors", tags=["Doctors"])
 app.include_router(patient_router.router, prefix="/patients", tags=["Patients"])
+app.include_router(appointment_router.router, prefix="/appointments", tags=["Appointments"])  # Added for Task 3
+app.include_router(prescription_router.router, prefix="/prescriptions", tags=["Prescriptions"])  # Added for Task 3

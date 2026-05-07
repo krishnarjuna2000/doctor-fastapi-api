@@ -15,3 +15,5 @@ class Patient(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     doctor = relationship("Doctor", back_populates="patients")
+    appointments = relationship("Appointment", back_populates="patient")  # Added for Task 3
+    prescriptions = relationship("Prescription", back_populates="patient")  # Added for Task 3

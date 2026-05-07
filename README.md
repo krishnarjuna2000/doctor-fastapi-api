@@ -5,13 +5,17 @@ A production-ready FastAPI application for managing healthcare providers and pat
 ## 🚀 Features
 
 ✅ **JWT Authentication** - Secure token-based authentication with OAuth2  
-✅ **Role-Based Access Control** - Admin and Doctor roles with proper authorization  
+✅ **Role-Based Access Control** - Admin, Doctor, and Patient roles with proper authorization  
 ✅ **Production Structure** - Clean separation of concerns (routers, services, schemas, models, auth)  
-✅ **Comprehensive APIs** - Full CRUD operations for doctors and patients  
+✅ **Comprehensive APIs** - Full CRUD operations for doctors, patients, appointments, and prescriptions  
+✅ **Appointment Management** - Book, update, cancel appointments with validation  
+✅ **Prescription Management** - Create and manage prescriptions for completed appointments  
 ✅ **Data Validation** - Pydantic v2 validation with custom validators  
 ✅ **Database Seeding** - Pre-loaded with sample data for testing  
 ✅ **Complete Test Suite** - 11 comprehensive tests covering all endpoints  
 ✅ **API Documentation** - Interactive Swagger UI and API guide  
+✅ **No Double Booking** - Prevents overlapping appointments for doctors  
+✅ **Time Validation** - Prevents past date/time bookings  
 
 ## 📋 Project Structure
 
@@ -24,20 +28,28 @@ doctor_api/
 │   ├── models/
 │   │   ├── user.py            # User model with relationships
 │   │   ├── doctor.py          # Doctor model
-│   │   └── patient.py         # Patient model
+│   │   ├── patient.py         # Patient model
+│   │   ├── appointment.py     # Appointment model (Task 3)
+│   │   └── prescription.py    # Prescription model (Task 3)
 │   ├── routers/
 │   │   ├── auth.py            # Authentication endpoints
 │   │   ├── doctors.py         # Doctor management endpoints
-│   │   └── patients.py        # Patient management endpoints
+│   │   ├── patients.py        # Patient management endpoints
+│   │   ├── appointments.py    # Appointment management (Task 3)
+│   │   └── prescriptions.py   # Prescription management (Task 3)
 │   ├── schemas/
 │   │   ├── auth.py            # Authentication schemas
 │   │   ├── user.py            # User response schemas
 │   │   ├── doctor.py          # Doctor CRUD schemas
-│   │   └── patient.py         # Patient schemas
+│   │   ├── patient.py         # Patient schemas
+│   │   ├── appointment.py     # Appointment schemas (Task 3)
+│   │   └── prescription.py    # Prescription schemas (Task 3)
 │   ├── services/
 │   │   ├── user_service.py    # User business logic
 │   │   ├── doctor_service.py  # Doctor business logic
-│   │   └── patient_service.py # Patient business logic
+│   │   ├── patient_service.py # Patient business logic
+│   │   ├── appointment_service.py # Appointment logic (Task 3)
+│   │   └── prescription_service.py # Prescription logic (Task 3)
 │   ├── config.py              # Environment configuration
 │   ├── database.py            # SQLAlchemy setup
 │   └── main.py                # FastAPI app initialization
@@ -57,8 +69,9 @@ doctor_api/
 
 ### User Roles
 
-- **Admin**: Can manage doctors and see all patients
-- **Doctor**: Can manage own patients and assign new ones
+- **Admin**: Can manage doctors, patients, appointments, and prescriptions
+- **Doctor**: Can manage own patients, appointments, and prescriptions
+- **Patient**: Can book appointments and view own records
 
 ## 📊 Database Models
 
@@ -66,7 +79,7 @@ doctor_api/
 - Email (unique)
 - Hashed password
 - Full name
-- Role (admin/doctor)
+- Role (admin/doctor/patient)
 - Timestamp fields
 
 ### Doctor Model
@@ -82,6 +95,19 @@ doctor_api/
 - Phone
 - Condition
 - Doctor relationship
+
+### Appointment Model (Task 3)
+- Patient and Doctor foreign keys
+- Date and time
+- Reason and notes
+- Status (scheduled/completed/cancelled)
+- Created timestamp
+
+### Prescription Model (Task 3)
+- Appointment, Doctor, Patient foreign keys
+- Diagnosis, medicines, dosage instructions
+- Remarks
+- Created timestamp
 
 ## 🔧 Setup Instructions
 
@@ -152,6 +178,20 @@ The API will start on `http://localhost:8000`
 - `DELETE /patients/{patient_id}` - Delete patient
 - `POST /patients/{patient_id}/assign-doctor` - Assign doctor to patient
 
+### Appointments (Task 3 - Requires Auth)
+- `POST /appointments` - Book new appointment
+- `GET /appointments` - Get appointments (filtered by role)
+- `GET /appointments/{appointment_id}` - Get appointment details
+- `PUT /appointments/{appointment_id}` - Update appointment
+- `DELETE /appointments/{appointment_id}` - Cancel appointment
+
+### Prescriptions (Task 3 - Requires Auth)
+- `POST /prescriptions` - Create prescription (Doctor only)
+- `GET /prescriptions` - Get prescriptions (filtered by role)
+- `GET /prescriptions/{prescription_id}` - Get prescription details
+- `PUT /prescriptions/{prescription_id}` - Update prescription (Doctor only)
+- `DELETE /prescriptions/{prescription_id}` - Delete prescription (Doctor only)
+
 ## 🧪 Testing
 
 Run the comprehensive test suite:
@@ -159,9 +199,14 @@ Run the comprehensive test suite:
 python test_api.py
 ```
 
-This will test all 11 endpoints with various scenarios including:
-- User registration and login
+This will test all endpoints with various scenarios including:
+- User registration and login (admin/doctor/patient roles)
 - Token generation and validation
+- Authorization checks (role-based access)
+- CRUD operations for doctors, patients, appointments, and prescriptions
+- Appointment booking validation (no double booking, past dates)
+- Prescription creation rules (completed appointments only)
+- Error handling and edge cases
 - Authorization checks
 - CRUD operations
 - Error handling

@@ -18,3 +18,5 @@ class Doctor(Base):
 
     users = relationship("User", back_populates="doctor")
     patients = relationship("Patient", back_populates="doctor")
+    appointments = relationship("Appointment", back_populates="doctor")  # Added for Task 3
+    prescriptions = relationship("Prescription", back_populates="doctor")  # Added for Task 3
