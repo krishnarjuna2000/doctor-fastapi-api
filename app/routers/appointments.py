@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import date
 from app.database import get_db
-from app.auth.dependencies import get_current_user, require_admin, require_doctor, require_patient
+from app.auth.dependencies import get_current_user
 from app.services.appointment_service import (
     get_appointment,
     get_appointments,
@@ -19,7 +19,7 @@ from app.schemas.appointment import (
 )
 from app.models.user import User
 
-router = APIRouter(prefix="/appointments", tags=["appointments"])
+router = APIRouter()
 
 
 @router.post("/", response_model=AppointmentResponse)
@@ -54,7 +54,7 @@ def read_appointments(
     # Filter based on user role
     if current_user.role == "patient":
         # Patients can only see their own appointments
-        patient_id = current_user.id  # Assuming user.id maps to patient.id - may need adjustment
+        patient_id = current_user.patient_id
     elif current_user.role == "doctor":
         # Doctors can see their own appointments
         doctor_id = current_user.doctor_id if current_user.doctor_id else current_user.id
@@ -84,7 +84,7 @@ def read_appointment(
         raise HTTPException(status_code=404, detail="Appointment not found")
 
     # Authorization checks
-    if current_user.role == "patient" and appointment.patient_id != current_user.id:
+    if current_user.role == "patient" and appointment.patient_id != current_user.patient_id:
         raise HTTPException(status_code=403, detail="Can only view own appointments")
     elif current_user.role == "doctor" and appointment.doctor_id != current_user.doctor_id:
         raise HTTPException(status_code=403, detail="Can only view own appointments")
@@ -105,8 +105,7 @@ def update_existing_appointment(
         db=db,
         appointment_id=appointment_id,
         appointment_update=appointment_update,
-        current_user_role=current_user.role,
-        current_user_id=current_user.id
+        current_user=current_user
     )
 
 
@@ -120,6 +119,5 @@ def cancel_appointment(
     return delete_appointment(
         db=db,
         appointment_id=appointment_id,
-        current_user_role=current_user.role,
-        current_user_id=current_user.id
+        current_user=current_user
     )

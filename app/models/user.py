@@ -13,6 +13,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(String(20), nullable=False, default="patient")  # Updated default to patient
     doctor_id = Column(Integer, ForeignKey("doctors.id"), nullable=True)  # Nullable for patients
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True)  # Nullable for doctors
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     doctor = relationship("Doctor", back_populates="users")

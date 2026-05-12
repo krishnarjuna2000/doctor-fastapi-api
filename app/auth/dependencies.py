@@ -2,44 +2,58 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError
+
 from app.database import get_db
 from app.services.user_service import get_user_by_id
 from app.auth.utils import decode_access_token
 from app.schemas.auth import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials. Please login again.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
     try:
         payload_data = decode_access_token(token)
-        user_id = int(payload_data.get("sub")) if payload_data.get("sub") else None
-        payload = TokenData(user_id=user_id, role=payload_data.get("role"))
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+
+        if not payload_data:
+            raise credentials_exception
+
+        user_id = payload_data.get("sub")
+        role = payload_data.get("role")
+
+        if user_id is None:
+            raise credentials_exception
+
+        payload = TokenData(
+            user_id=int(user_id),
+            role=role
         )
 
-    if payload.user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    except (JWTError, ValueError, TypeError):
+        raise credentials_exception
 
     user = get_user_by_id(db, payload.user_id)
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail="User not found. Please login with a valid registered user.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
     return user
 
 
-def require_admin(current_user = Depends(get_current_user)):
+def require_admin(current_user=Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -48,7 +62,7 @@ def require_admin(current_user = Depends(get_current_user)):
     return current_user
 
 
-def require_doctor_or_admin(current_user = Depends(get_current_user)):
+def require_doctor_or_admin(current_user=Depends(get_current_user)):
     if current_user.role not in {"admin", "doctor"}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -57,7 +71,7 @@ def require_doctor_or_admin(current_user = Depends(get_current_user)):
     return current_user
 
 
-def require_patient(current_user = Depends(get_current_user)):
+def require_patient(current_user=Depends(get_current_user)):
     if current_user.role != "patient":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -66,10 +80,19 @@ def require_patient(current_user = Depends(get_current_user)):
     return current_user
 
 
-def require_doctor(current_user = Depends(get_current_user)):
+def require_doctor(current_user=Depends(get_current_user)):
     if current_user.role != "doctor":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Doctor access required",
+        )
+    return current_user
+
+
+def require_doctor_patient_or_admin(current_user=Depends(get_current_user)):
+    if current_user.role not in {"admin", "doctor", "patient"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin, doctor, or patient access required",
         )
     return current_user

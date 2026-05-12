@@ -4,9 +4,8 @@ from app.database import create_database_if_missing, engine, Base
 from app.routers import auth as auth_router
 from app.routers import doctors as doctor_router
 from app.routers import patients as patient_router
-from app.routers import appointments as appointment_router  # Added for Task 3
+from app.routers import appointments
 from app.routers import prescriptions as prescription_router  # Added for Task 3
-from app.models import user, doctor, patient, appointment, prescription  # noqa: F401 - Added new models
 
 app = FastAPI(
     title="Doctor API",
@@ -60,5 +59,5 @@ def favicon():
 app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
 app.include_router(doctor_router.router, prefix="/doctors", tags=["Doctors"])
 app.include_router(patient_router.router, prefix="/patients", tags=["Patients"])
-app.include_router(appointment_router.router, prefix="/appointments", tags=["Appointments"])  # Added for Task 3
+app.include_router(appointments.router, prefix="/appointments", tags=["Appointments"])
 app.include_router(prescription_router.router, prefix="/prescriptions", tags=["Prescriptions"])  # Added for Task 3

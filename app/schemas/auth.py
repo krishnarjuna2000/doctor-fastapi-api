@@ -13,6 +13,7 @@ class UserRegister(BaseModel):
     password: str = Field(..., min_length=6)
     role: str = Field(..., pattern="^(admin|doctor|patient)$")  # Updated to include patient
     doctor_id: Optional[int] = None
+    patient_id: Optional[int] = None
 
 
 class Token(BaseModel):

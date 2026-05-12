@@ -11,7 +11,7 @@ def get_user_by_id(db: Session, user_id: int):
     return db.query(User).filter(User.id == user_id).first()
 
 
-def create_user(db: Session, name: str, email: str, password: str, role: str, doctor_id: int = None):
+def create_user(db: Session, name: str, email: str, password: str, role: str, doctor_id: int = None, patient_id: int = None):
     if get_user_by_email(db, email):
         return None
 
@@ -21,6 +21,7 @@ def create_user(db: Session, name: str, email: str, password: str, role: str, do
         password_hash=hash_password(password),
         role=role,
         doctor_id=doctor_id,
+        patient_id=patient_id,
     )
     db.add(user)
     db.commit()

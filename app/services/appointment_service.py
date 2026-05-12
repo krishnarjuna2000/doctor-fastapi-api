@@ -84,8 +84,7 @@ def update_appointment(
     db: Session,
     appointment_id: int,
     appointment_update: AppointmentUpdate,
-    current_user_role: str,
-    current_user_id: int
+    current_user
 ) -> Appointment:
     """Update an appointment with proper authorization."""
     appointment = get_appointment(db, appointment_id)
@@ -93,8 +92,8 @@ def update_appointment(
         raise HTTPException(status_code=404, detail="Appointment not found")
 
     # Authorization checks
-    if current_user_role == "patient":
-        if appointment.patient_id != current_user_id:
+    if current_user.role == "patient":
+        if appointment.patient_id != current_user.patient_id:
             raise HTTPException(status_code=403, detail="Can only update own appointments")
         # Patients can only cancel scheduled appointments
         if appointment_update.status and appointment_update.status != AppointmentStatus.cancelled:
@@ -102,8 +101,8 @@ def update_appointment(
         if appointment.status != AppointmentStatus.scheduled:
             raise HTTPException(status_code=400, detail="Can only cancel scheduled appointments")
 
-    elif current_user_role == "doctor":
-        if appointment.doctor_id != current_user_id:
+    elif current_user.role == "doctor":
+        if appointment.doctor_id != current_user.doctor_id:
             raise HTTPException(status_code=403, detail="Can only update own appointments")
         # Doctors can update status for their appointments
 
@@ -143,21 +142,21 @@ def update_appointment(
         raise HTTPException(status_code=400, detail="Appointment update failed")
 
 
-def delete_appointment(db: Session, appointment_id: int, current_user_role: str, current_user_id: int) -> Appointment:
+def delete_appointment(db: Session, appointment_id: int, current_user) -> Appointment:
     """Soft delete (cancel) an appointment."""
     appointment = get_appointment(db, appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Appointment not found")
 
     # Authorization checks
-    if current_user_role == "patient":
-        if appointment.patient_id != current_user_id:
+    if current_user.role == "patient":
+        if appointment.patient_id != current_user.patient_id:
             raise HTTPException(status_code=403, detail="Can only cancel own appointments")
         if appointment.status != AppointmentStatus.scheduled:
             raise HTTPException(status_code=400, detail="Can only cancel scheduled appointments")
 
-    elif current_user_role == "doctor":
-        if appointment.doctor_id != current_user_id:
+    elif current_user.role == "doctor":
+        if appointment.doctor_id != current_user.doctor_id:
             raise HTTPException(status_code=403, detail="Can only cancel own appointments")
 
     # Admin can cancel any appointment

@@ -17,7 +17,7 @@ from app.schemas.prescription import (
 )
 from app.models.user import User
 
-router = APIRouter(prefix="/prescriptions", tags=["prescriptions"])
+router = APIRouter()
 
 
 @router.post("/", response_model=PrescriptionResponse)
@@ -44,7 +44,7 @@ def read_prescriptions(
     # Filter based on user role
     if current_user.role == "patient":
         # Patients can only see their own prescriptions
-        patient_id = current_user.id  # Assuming user.id maps to patient.id - may need adjustment
+        patient_id = current_user.patient_id
     elif current_user.role == "doctor":
         # Doctors can see their own prescriptions
         doctor_id = current_user.doctor_id if current_user.doctor_id else current_user.id
@@ -73,7 +73,7 @@ def read_prescription(
         raise HTTPException(status_code=404, detail="Prescription not found")
 
     # Authorization checks
-    if current_user.role == "patient" and prescription.patient_id != current_user.id:
+    if current_user.role == "patient" and prescription.patient_id != current_user.patient_id:
         raise HTTPException(status_code=403, detail="Can only view own prescriptions")
     elif current_user.role == "doctor" and prescription.doctor_id != current_user.doctor_id:
         raise HTTPException(status_code=403, detail="Can only view own prescriptions")
